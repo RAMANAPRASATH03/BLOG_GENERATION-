@@ -77,7 +77,7 @@ def blog_generator_app():
         uploaded_file = st.file_uploader("Upload a file:", type=["txt", "csv", "docx", "pdf"])
 
         if uploaded_file is not None:
-            vectordb.store_pdf_in_chroma(uploaded_file, vectordatabase)
+            vectordb.store_file_in_chroma(uploaded_file, vectordatabase)
             st.success(f"File '{uploaded_file.name}' uploaded and embeddings stored in vectordb successfully!")
 
 blog_generator_app()

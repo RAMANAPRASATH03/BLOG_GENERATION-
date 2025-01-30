@@ -1,65 +1,61 @@
-import chromadb
-from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings  # Hugging Face for embeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader, TextLoader, CSVLoader, Docx2txtLoader
 import os
+from langchain.document_loaders import PyPDFLoader, TextLoader, CSVLoader, Docx2txtLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain.embeddings import HuggingFaceEmbeddings
 
-# Initialize ChromaDB with Hugging Face Embeddings for Blog Content
+# ✅ Ensure vectorstore is initialized properly
 def initialize_chroma():
-    """
-    Initializes ChromaDB instance with Hugging Face embeddings.
-
-    Returns:
-        Chroma: Vector database instance for blog content storage.
-    """
+    """Initialize and return a new Chroma vector store instance."""
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     return Chroma(persist_directory="blog_chroma_db", embedding_function=embeddings)
 
-def retrieve_blog_content(topic, vectorstore):
-    """
-    Retrieves relevant blog content from ChromaDB.
+# ✅ Store files in ChromaDB
+def store_file_in_chroma(file, vectorstore):
+    """Loads a file, splits its content, and stores it in ChromaDB."""
+    
+    # Save file temporarily
+    temp_file_path = os.path.join("temp_storage", file.name)
+    os.makedirs("temp_storage", exist_ok=True)  # Ensure directory exists
 
-    Args:
-        topic (str): The blog topic for retrieval.
-        vectorstore (Chroma): The vector database instance.
-
-    Returns:
-        List[Document]: Retrieved documents relevant to the blog topic.
-    """
-    retriever = vectorstore.as_retriever()
-    return retriever.get_relevant_documents(topic)
-
-def store_blog_content_in_chroma(file, vectorstore):
-    """
-    Ingests a document (PDF, TXT, CSV, DOCX) into ChromaDB for blog content generation.
-
-    Args:
-        file: Uploaded file object containing blog-related content.
-        vectorstore (Chroma): The vector database instance.
-    """
-    file_path = f"blog_temp_files/{file.name}"
-    os.makedirs("blog_temp_files", exist_ok=True)
-
-    with open(file_path, "wb") as f:
-        f.write(file.read())
+    with open(temp_file_path, "wb") as f:
+        f.write(file.read())  # Save uploaded file to disk
 
     # Load document based on file type
     if file.name.endswith(".pdf"):
-        loader = PyPDFLoader(file_path)
+        loader = PyPDFLoader(temp_file_path)
     elif file.name.endswith(".txt"):
-        loader = TextLoader(file_path)
+        loader = TextLoader(temp_file_path)
     elif file.name.endswith(".csv"):
-        loader = CSVLoader(file_path)
+        loader = CSVLoader(temp_file_path)
     elif file.name.endswith(".docx"):
-        loader = Docx2txtLoader(file_path)
+        loader = Docx2txtLoader(temp_file_path)
     else:
         raise ValueError("Unsupported file format")
 
     docs = loader.load()
 
-    # Split documents into manageable chunks for vector storage
+    # Split documents into smaller chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     split_docs = text_splitter.split_documents(docs)
 
+    # Store in ChromaDB
     vectorstore.add_documents(split_docs)
+
+    # Cleanup temporary file
+    os.remove(temp_file_path)
+
+# ✅ Retrieve documents from ChromaDB
+def retrieve_from_chroma(query, vectorstore):
+    """
+    Retrieve documents from ChromaDB based on a query.
+
+    Args:
+        query (str): The query string.
+        vectorstore (Chroma): The ChromaDB vector store instance.
+
+    Returns:
+        list: List of retrieved documents.
+    """
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    return retriever.get_relevant_documents(query)

@@ -1,8 +1,9 @@
+
+# a
 from langchain.agents import create_react_agent, AgentExecutor
 import tools
 import models
 import prompts
-
 
 #### 1️⃣ BASIC GENERATOR ####
 def generate_code_with_basic_agent(topic, language):
@@ -49,6 +50,8 @@ def generate_blog_with_agent(topic):
 
     Args:
         topic (str): Topic for the blog
+        max_iterations (int): Maximum iterations the agent should run
+        timeout (int): Time limit in seconds for agent execution
 
     Returns:
         str: Generated blog content
@@ -65,11 +68,13 @@ def generate_blog_with_agent(topic):
         handle_parsing_errors=True,
         verbose=True,
         stop_sequence=True,
-        max_iterations=3
+       
+        
     )
 
-    response = agent_executor.invoke({"input": topic})
-    return response
+    response = agent_executor.invoke({"input": topic, "topic": topic})
+    print(response)
+    return response["output"]
 
 
 #### 4️⃣ AGENT WITH RAG ####
@@ -80,6 +85,8 @@ def generate_blog_with_rag_agent(topic, vector):
     Args:
         topic (str): Topic for the blog
         vector (object): Instance of vector store
+        max_iterations (int): Maximum iterations the agent should run
+        timeout (int): Time limit in seconds for agent execution
 
     Returns:
         str: Generated blog content
@@ -99,8 +106,10 @@ def generate_blog_with_rag_agent(topic, vector):
         handle_parsing_errors=True,
         verbose=True,
         stop_sequence=True,
-        max_iterations=3
+       
+        
     )
 
     response = agent_executor.invoke({"input": topic})
+
     return response
