@@ -65,7 +65,7 @@ def blog_generator_agent():
         PromptTemplate -> Configured PromptTemplate instance.
     """
     prompt_template = '''
-    You are a blog generator agent. Write a blog on {topic} using the available tools.
+    You are a blog generator agent.  You have access to the following tools: {tools}
 
     You are a blog generator assistant, specialized in creating blog posts based on a given topic.
     Write a well-structured, informative, and engaging blog on the given topic.
@@ -73,9 +73,17 @@ def blog_generator_agent():
     
     If you request anything other than a blog post, I will respond with: "I'm sorry, I can only generate blogs. Please provide a topic for a blog post."
 
-    Tools: {tools}
-    Tool names: {tool_names}
-    Current scratchpad: {agent_scratchpad}
+    Action:  the action to tkae, should be one of [{tool_names}]
+    Action Input: the input to the action
+    Observation: the result of the action
+    ... (this Thought/Action/Action Input/Observation pattern can be repeated 3 times)
+    Thought: I now know the final answer
+    Final Answer: Blog
+
+    Begin!
+
+    Question:  Write a blog on {topic} using the available tools.
+    Thought: {agent_scratchpad}
     '''
     
     return PromptTemplate(input_variables=["topic", "tools", "tool_names", "agent_scratchpad"], template=prompt_template)
@@ -103,3 +111,4 @@ def blog_generator_agent_with_rag():
     '''
     
     return PromptTemplate(input_variables=["topic", "tools", "tool_names", "agent_scratchpad"], template=prompt_template)
+

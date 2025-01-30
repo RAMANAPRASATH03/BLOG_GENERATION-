@@ -1,5 +1,7 @@
 from langchain.agents import Tool
-import chain
+import chains
+
+
 from vectordb import retrieve_from_chroma
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
@@ -14,7 +16,7 @@ def code_generator_tool():
     """
     return Tool(
         name="Code Generator",
-        func=lambda topic, language: chain.generate_code_chain(topic, language),
+        func=lambda topic, language: chains.generate_code_chain(topic, language),
         description="Generates a code snippet based on a given topic and programming language."
     )
 
