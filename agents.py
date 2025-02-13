@@ -1,6 +1,6 @@
 from langchain.agents import create_react_agent, AgentExecutor
 import tools
-import models
+import model
 import prompts
 
 
@@ -90,7 +90,7 @@ def generate_blog_with_rag_agent(topic, vector):
     ]
 
     prompt_template = prompts.blog_generator_agent_with_rag()
-    llm = models.create_chat_groq_model()
+    llm = model.create_chat_groq_model()
     agent = create_react_agent(tools=tools_list, llm=llm, prompt=prompt_template)
 
     agent_executor = AgentExecutor(
